@@ -34,6 +34,8 @@ DEBUG = True
 
 ALLOWED_HOSTS = []
 
+# FIX 4: Change this for testing
+# ALLOWED_HOSTS = ['myimaginaryaddress.com']
 
 # Application definition
 
@@ -129,3 +131,35 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# FLAW #4 (and FIX #4): Security Logging And Monitoring Failures. By default, Django runs in debug mode and logs a lot of stuff to console.
+# If and when you disable the debug mode, only Django messages of ERROR or CRITICAL level are logged, and even they are logged to AdminEmailHandler
+# (see: https://docs.djangoproject.com/en/5.1/ref/logging/#django-s-default-logging-configuration).
+
+# Here's a quick POC logging setup that logs both security.DisallowedHost and security.csrf to a separate security.log file
+
+# You can test this by:
+#   1. Change DEBUG = False in settings.py -> This both removes localhost from the default allowed hosts, as well as disables the default debug logging
+#   2. Include some random hostname that is not localhost in ALLOWED_HOSTS. For example, uncomment the example setting under FIX #3
+#   3. Try to access the app. The connection is refused and the connection attempt is logged to the security.log file.
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'security_file': {
+            'class': 'logging.FileHandler',
+            'filename': 'security.log',
+        }
+    },
+    'loggers': {
+        'django.security.DisallowedHost': {
+            'handlers': ['security_file'],
+            'propagate': True,
+        },
+        'django.security.csrf': {
+            'handlers': ['security_file'],
+            'propagate': True,
+        },
+    },
+}
