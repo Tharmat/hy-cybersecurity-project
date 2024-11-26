@@ -3,6 +3,7 @@ from django.shortcuts import get_object_or_404, render
 from django.urls import reverse
 from django.utils import timezone
 from django.views import generic
+from django.views.decorators.csrf import csrf_exempt
 
 from .models import Choice, Question
 
@@ -18,7 +19,11 @@ class IndexView(generic.ListView):
         return Question.objects.filter(
             pub_date__lte=timezone.now()
         ).order_by('-pub_date')[:5]
-    
+
+# Flaw #1: CSRF. This combined with the missing CSRF-token in the template detail.html disables Django's CSRF mitigations.
+# Fix for flaw #1: Comment out @csrf_exempt, use instead @csrf_protect
+# @csrf_protect
+@csrf_exempt
 class DetailView(generic.DetailView):
     model = Question
     template_name = 'polls/detail.html'
