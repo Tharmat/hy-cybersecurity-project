@@ -6,4 +6,5 @@ This is a repository for Cyber Security Project 1. It contains an example Django
 &nbsp;
 
 # Security Flaws
-## Flaw #1: Cross-Site Request Forgery
+## Flaw #1: Cross-Site Request Forgery (CSRF)
+## Flaw #2: Injection
