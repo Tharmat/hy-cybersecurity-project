@@ -3,6 +3,7 @@ from django.shortcuts import get_object_or_404, render
 from django.urls import reverse
 from django.utils import timezone
 from django.views import generic
+from django.views.decorators.csrf import csrf_exempt
 
 from .models import Choice, Question
 
@@ -33,6 +34,10 @@ class ResultsView(generic.DetailView):
     model = Question
     template_name = 'polls/results.html'
 
+# FLAW #1: CSRF. This combined with the missing CSRF-token in the template detail.html disables Django's CSRF mitigations for this view.
+# FIX #1: Comment out @csrf_exempt and include the csrf_token in the detail.html. 
+# CSRF protection then automatically handled by middleware
+@csrf_exempt
 def vote(request, question_id):
     question = get_object_or_404(Question, pk=question_id)
     try:
