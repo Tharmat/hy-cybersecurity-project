@@ -19,6 +19,13 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
+# FLAW #3: Security Misconfigurations.
+# SECRET_KEY is actually included in the settings.py (and thus also in git repo) and not read from .env file
+# DEBUG = True, which can allow an attacker to gather additional information about the system
+# FIX #3:
+#   1) Read the secret key from and .env file
+#   2) Disable debugging in production (there's a reason why it says 'SECURITY WARNING'...)
+
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = 'django-insecure-x$&ttfh)^qp73giyq$ua&cbj$3u9dj1a_=r3==dhz5met_+kf_'
 
@@ -37,7 +44,7 @@ INSTALLED_APPS = [
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
-    'django.contrib.staticfiles',
+    'django.contrib.staticfiles'
 ]
 
 MIDDLEWARE = [
