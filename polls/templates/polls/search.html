@@ -1,0 +1,10 @@
+{% if object_list %}
+<p>Search results: </p>
+<ul>
+    {% for question in object_list %}
+    <li><a href="{% url 'polls:detail' question.id %}">{{ question.question_text }}</a></li>  
+    {% endfor %}
+  </ul>
+{% else %}
+  <p>No questions found for your query.</p>
+{% endif %}

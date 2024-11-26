@@ -55,3 +55,20 @@ def vote(request, question_id):
         # with POST data. This prevents data from being posted twice if a
         # user hits the Back button.
         return HttpResponseRedirect(reverse('polls:results', args=(question.id,)))
+
+class SearchResultsView(generic.ListView):
+    model = Question
+    template_name = 'polls/search.html'
+
+    def get_queryset(self):
+        query = self.request.GET['search_text']
+        object_list = Question.objects.filter(question_text__icontains = query)
+        return object_list
+
+# FLAW #2: SQL injection. This whole view/method is constructed to demonstrate how non-parametrized SQL can lead to SQL injections
+# FIX #2: Instead of this view use the view that used the built-in Django class SearchResultsView by modifying the urls.py
+def search(request):
+    query = request.GET.get('search_text')
+    sql = "SELECT * FROM polls_question WHERE question_text LIKE '%" + query + "%'"
+    search_results = Question.objects.raw(sql)
+    return render(request, 'polls/search.html', {'object_list' : search_results})
