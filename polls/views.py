@@ -34,8 +34,10 @@ class ResultsView(generic.DetailView):
     model = Question
     template_name = 'polls/results.html'
 
-# FLAW #1: CSRF. This combined with the missing CSRF-token in the template detail.html disables Django's CSRF mitigations for this view.
-# FIX #1: Comment out @csrf_exempt and include the csrf_token in the detail.html. 
+# FLAW #1: CSRF. This @csrf_exempt decorater combined with the missing CSRF-token in the template 
+# detail.html disables Django's CSRF mitigations for this view.
+# 
+# FIX #1: Comment out @csrf_exempt and include the csrf_token in the detail.html.
 # CSRF protection then automatically handled by middleware
 @csrf_exempt
 def vote(request, question_id):
