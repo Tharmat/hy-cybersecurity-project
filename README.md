@@ -65,5 +65,11 @@ By default, Django runs in debug mode and logs a lot of stuff to console. If and
 3. Try to access the app. The connection is refused and the connection attempt is logged to the security.log file.
 
 ## Flaw #5: Cross-Site Scripting (XSS)
+This flaw is located in [results.html](https://github.com/Tharmat/hy-cybersecurity-project/blob/master/polls/templates/polls/results.html#L6)
 
+Cross site scripting occurs when unsafe user input is included into a website without proper validitation and sanitization. This usually happens when the site includes some method of submitting HTML-formatted data, such as some forum websites that allow (some) HTML-tags in messages. The malicious data is then included as part of the website and is executed by visitor's browsers leading to potential security issues. 
 
+This application contains functionality for adding your own option(s) for a vote. This new user provided option is then added to the database and displayed as a valid option going forward. The software assumes that the data fetched from the database is safe,
+even though it can be added by any user (bypassing the Django provided default admin functionality). This enables malicious user to add html/or embedded js to the web page in form of a new vote option.
+     
+This can be tested by pasting following into the "Add your option" text box and clicking submit: `<script>alert("I am an alert box!");</script>`. This input is then included as an vote option and it is parsed as a part of the web page, showing the alert box for every subsequent reload of the results.html (tested as working on Windows/Chrome). Again, this flaw requires actively making the application less secure by explicitly disabling Django's security features. This can be easily fixed by sticking to the defaults. In this case, change `{{ choice.choice_text | safe}}` back to `{{ choice.choice_text }}` in [results.html](https://github.com/Tharmat/hy-cybersecurity-project/blob/master/polls/templates/polls/results.html#L16) to re-enable Django's built-in escaping.
