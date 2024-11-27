@@ -38,7 +38,7 @@ need CSRF protection.
 In this software the [vote view](https://github.com/Tharmat/hy-cybersecurity-project/blob/master/polls/views.py#L37) is not protected by Django's CSRF protection as the [detail.html](https://github.com/Tharmat/hy-cybersecurity-project/blob/master/polls/templates/polls/detail.html#L6) is missing the `{% csrf_token %}` and the view is explicitly moved outside Django's default CSRF protections. This is a real flaw, but requires _explicitly making 
 the software less secure_ so this is not very _realistic_. The problem can be fixed by inlcuding the csrf_token in the detail.html by uncommenting the [relevant part](https://github.com/Tharmat/hy-cybersecurity-project/blob/master/polls/templates/polls/detail.html#L8) and re-enabling the CSRF protection by commenting the `@csrf_exempt` [line](https://github.com/Tharmat/hy-cybersecurity-project/blob/master/polls/views.py#L42).
 
-## Flaw #2: Injection
+## Flaw #2: Injection ([OWASP A1:2017](https://owasp.org/www-project-top-ten/2017/A1_2017-Injection))
 This is a single flaw but is located in two files:
 [urls.py](https://github.com/Tharmat/hy-cybersecurity-project/blob/master/polls/urls.py#L12)
 [views.py](https://github.com/Tharmat/hy-cybersecurity-project/blob/master/polls/views.py#L80)
@@ -49,14 +49,14 @@ For example, this application contains a search box that allows the user to sear
 
 This problem can be fixed by using Django's SearchResultView implementation that uses parametrized sql. To fix this application [urls.py](https://github.com/Tharmat/hy-cybersecurity-project/blob/master/polls/urls.py#L12) needs to be modified by commenting line 19 and uncommenting line 20. This makes the application use the safe implementation instead of the insecure custom one. 
 
-## Flaw #3: Security Misconfiguration
+## Flaw #3: Security Misconfiguration ([OWASP A6:2017](https://owasp.org/www-project-top-ten/2017/A6_2017-Security_Misconfiguration))
 The flaw is located in [settings.py](https://github.com/Tharmat/hy-cybersecurity-project/blob/master/mysite/settings.py#L22)
 
 Security misconfigurations can be described as any configuration that decreases the overall security of an application. Most software like Django come with sane default configuration, but this cannot be taken as given. If publishing this application in a public repository can be considered "putting the software into production", then the software contain two distinct security misconfigurations. First, it still runs in debug mode, even though even the default configuration file explicitly tolds in ALL CAPS that this should not be done in production. The most obvious indication why this is a security problems is with the Flaw #2's SQL injection: with the debug-mode enabled, the attacker can see that the SQL is executed as is and even given an helpful error message. Without the debug mode, there's only a 500 Server Error which still can indicate there's an SQL injection opportunity, but this information requires a bit more sleuthing. In general, showing internal error messages to user can allow the attacker to atleast gather more information about the internal working of the software. Secondly, the application stores its secret key in the settings.py instead of being read from a separate env-file. Thus the secret key is also included in the git repo and available publicly and is not _secret_.
 
 To fix these issues, the configuration should be changes so that 1) debug mode is disabled (which also requires updating ALLOWED_HOSTS) and 2) the secret key is read using an env-file (for example, by using python-dotenv package).
 
-## Flaw #4: Security Logging and Monitoring Failures
+## Flaw #4: Insufficient Logging & Monitoring ([OWASP A10:2017](https://owasp.org/www-project-top-ten/2017/A10_2017-Insufficient_Logging%2526Monitoring))
 The flaw is located in [settings.py](https://github.com/Tharmat/hy-cybersecurity-project/blob/master/mysite/settings.py#L140)
 
 By default, Django runs in debug mode and logs a lot of stuff to console. If and when you disable the debug mode, the [default](https://docs.djangoproject.com/en/5.1/ref/logging/#django-s-default-logging-configuration)) is that only django.* messages of ERROR or CRITICAL level are logged to AdminEmailHandler, not to a file. Thus running the default logging in non-debug mode can be considered a logging failure or a flaw as there might not be enough logs to monitor and investigate potential security incidents. This application has this fixed by implementing a barebones _security logging_ that logs both security.DisallowedHost and security.csrf to a separate security.log file. This can be tested by:
@@ -64,7 +64,7 @@ By default, Django runs in debug mode and logs a lot of stuff to console. If and
 2. Including a random hostname that is not localhost in ALLOWED_HOSTS in settings.py. For example, uncomment the example setting in [settings.py](https://github.com/Tharmat/hy-cybersecurity-project/blob/master/mysite/settings.py#L43)
 3. Try to access the app. The connection is refused and the connection attempt is logged to the security.log file.
 
-## Flaw #5: Cross-Site Scripting (XSS)
+## Flaw #5: Cross-Site Scripting (XSS) ([OWASP A7:2017](https://owasp.org/www-project-top-ten/2017/A7_2017-Cross-Site_Scripting_(XSS)))
 This flaw is located in [results.html](https://github.com/Tharmat/hy-cybersecurity-project/blob/master/polls/templates/polls/results.html#L6)
 
 Cross site scripting occurs when unsafe user input is included into a website without proper validitation and sanitization. This usually happens when the site includes some method of submitting HTML-formatted data, such as some forum websites that allow (some) HTML-tags in messages. The malicious data is then included as part of the website and is executed by visitor's browsers leading to potential security issues. 
