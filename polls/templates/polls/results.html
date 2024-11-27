@@ -2,7 +2,18 @@
 
 <ul>
 {% for choice in question.choice_set.all %}
-    <li>{{ choice.choice_text }} -- {{ choice.votes }} vote{{ choice.votes|pluralize }}</li>
+    <!-- 
+    FLAW #5: Cross-Site Scripting (XSS). The software assumes that the choice_text is sanitized and safe, 
+    even though it can be added by any user (and bypassing the Django provided default admin functionality). This enables
+    malicious user to add html/or embedded js to the web page in form of a new vote option.
+     
+    TESTING: Paste following into the "Add your option" text box and submit: <script>alert("I am an alert box!");</script>
+    This causes the script to be included as an vote option and it is parsed as a part of the web page, showing the alert box 
+    for every subsequent reload of the results.html (tested as working on Windows/Chrome)
+
+    FIX #5: Change {{ choice.choice_text | safe}} to {{ choice.choice_text }} to re-enable Django's built-in escaping 
+    -->
+    <li>{{ choice.choice_text | safe}} -- {{ choice.votes }} vote{{ choice.votes|pluralize }}</li>
 {% endfor %}
 </ul>
 

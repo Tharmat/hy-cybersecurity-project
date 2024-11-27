@@ -12,3 +12,13 @@
 {% endfor %}
 <input type="submit" value="Vote">
 </form>
+
+<br>
+
+<p>Not satisfied with the options? Add your own!</p>
+<form action="{% url 'polls:add' question.id %}" method="post">
+    {% csrf_token %} 
+    <input type="text" name="choice_text">
+    <input type="submit" value="Add your option">
+</form>
+    

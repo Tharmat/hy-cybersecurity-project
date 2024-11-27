@@ -65,6 +65,16 @@ class SearchResultsView(generic.ListView):
         object_list = Question.objects.filter(question_text__icontains = query)
         return object_list
 
+def add(request, question_id):
+    question = get_object_or_404(Question, pk=question_id)
+    choice = Choice()
+    choice.votes = 0
+    choice.choice_text = request.POST.get('choice_text')
+    choice.question = question
+    choice.save()
+
+    return HttpResponseRedirect(reverse('polls:results', args=(question.id,)))
+
 # FLAW #2: SQL injection. This whole view/method is constructed to demonstrate how non-parametrized SQL can lead to SQL injections
 # FIX #2: Instead of this view use the view that used the built-in Django class SearchResultsView by modifying the urls.py
 def search(request):
